@@ -1,6 +1,9 @@
-from django.shortcuts import render
-from django.core.files.storage import FileSystemStorage
 import pandas as pd
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render
+import json
+import os
+from django.http import JsonResponse
 
 
 def index(request):
@@ -29,18 +32,12 @@ def upload_file(request):
     return render(request, 'extractor/upload.html')
 
 
-from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
-import pandas as pd
-import json
-import os
-
-
 def generate_ocel(request):
     if request.method == 'POST':
         selected_columns = request.POST.getlist('columns')
         if not selected_columns:
-            return render(request, 'extractor/upload_error.html', {'error': 'No columns were selected for OCEL extraction.'})
+            return render(request, 'extractor/upload_error.html',
+                          {'error': 'No columns were selected for OCEL extraction.'})
 
         csv_data = json.loads(request.session.get('csv_data', '{}'))
         df = pd.DataFrame(csv_data)
@@ -72,9 +69,6 @@ def generate_ocel(request):
             return render(request, 'extractor/upload_error.html', {'error': str(e)})
 
 
-from django.http import JsonResponse
-
-
 def process_columns(request):
     if request.method == 'POST':
         selected_columns = request.POST.getlist('selected_columns')
@@ -93,44 +87,3 @@ def process_columns(request):
             return JsonResponse({'ocel': ocel_json})
         except Exception as e:
             return render(request, 'extractor/upload_error.html', {'error': str(e)})
-
-
-from django.http import JsonResponse
-from django.core.files.storage import FileSystemStorage
-import json
-import os
-
-# def process_columns(request):
-#     if request.method == 'POST':
-#         selected_columns = request.POST.getlist('columns')
-#         data = request.session.get('uploaded_data')
-#
-#         if not data:
-#             return render(request, 'extractor/upload_error.html', {'error': 'No uploaded data found in session.'})
-#
-#         try:
-#             filtered_data = data[selected_columns]
-#             json_output = filtered_data.to_dict(orient='records')
-#
-#             file_name = "processed_data.json"
-#             file_path = os.path.join("processed_files", file_name)
-#
-#             if not os.path.exists("processed_files"):
-#                 os.makedirs("processed_files")
-#
-#             with open(file_path, "w") as json_file:
-#                 json.dump(json_output, json_file, indent=4)
-#
-#             download_url = f"/media/{file_name}"
-#
-#             json_pretty = json.dumps(json_output, indent=4)
-#
-#             return render(request, 'extractor/process_success.html', {
-#                 'json_data': json_pretty,
-#                 'download_url': download_url,
-#             })
-#
-#         except Exception as e:
-#             return render(request, 'extractor/upload_error.html', {'error': str(e)})
-#
-#     return redirect('upload')
