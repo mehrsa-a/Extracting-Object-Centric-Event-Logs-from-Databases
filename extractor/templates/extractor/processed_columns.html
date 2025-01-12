@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processed Columns</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        pre {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2a2a2a;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-height: 400px;
+            word-wrap: break-word;
+        }
+        .btn-download {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn-download:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Processed OCEL Data</h1>
+        <p>The processed OCEL data is displayed below:</p>
+
+        <pre>{{ json_data }}</pre>
+
+        <a href="{{ download_url }}" class="btn-download" download>Download Processed OCEL File</a>
+
+        <a href="{% url 'upload_file' %}" class="btn-download">Back to Upload</a>
+    </div>
+</body>
+</html>

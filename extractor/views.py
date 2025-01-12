@@ -4,6 +4,9 @@ from django.shortcuts import render
 import json
 import os
 from django.http import JsonResponse
+import pm4py
+from django.conf import settings
+from .utils import convert_to_ocel_format, save_ocel_to_file
 
 
 def index(request):
@@ -39,32 +42,35 @@ def generate_ocel(request):
             return render(request, 'extractor/upload_error.html',
                           {'error': 'No columns were selected for OCEL extraction.'})
 
-        csv_data = json.loads(request.session.get('csv_data', '{}'))
-        df = pd.DataFrame(csv_data)
+        file_path = request.session.get('uploaded_file_path')
+        if not file_path:
+            return render(request, 'extractor/upload_error.html', {'error': 'Uploaded file not found!'})
 
         try:
-            extracted_data = df[selected_columns]
+            event_log = pd.read_csv(file_path)
+            temp_log = event_log.copy()
 
-            ocel = {
-                "ocel:global-log": {},
-                "ocel:events": [],
-                "ocel:objects": {}
-            }
-            for index, row in extracted_data.iterrows():
-                event = {
-                    "ocel:eid": str(index),
-                    "ocel:activity": "Sample Activity",
-                    "ocel:timestamp": "2025-01-01T00:00:00Z",
-                    "ocel:vmap": row.to_dict(),
-                    "ocel:omap": []
-                }
-                ocel["ocel:events"].append(event)
+            temp_log['start_date'] = pd.to_datetime(event_log['Start Date'])
+            temp_log['Timestamp'] = temp_log['start_date']
+            temp_log.drop(columns=['Start Date', 'End Date'], inplace=True)
 
-            ocel_file_path = os.path.join('media', 'ocel.json')
-            with open(ocel_file_path, 'w') as f:
-                json.dump(ocel, f, indent=4)
+            temp_log = temp_log.rename(columns={
+                'case ID': 'ocel:eid',
+                'Activity': 'ocel:activity',
+                'Timestamp': 'ocel:timestamp',
+                'Customer ID': 'ocel:type:Customer ID'
+            })
 
-            return render(request, 'extractor/ocel_download.html', {'download_url': '/media/ocel.json'})
+            ocel_data = pm4py.convert_log_to_ocel(
+                temp_log,
+                activity_column='ocel:activity',
+                timestamp_column='ocel:timestamp'
+            )
+
+            ocel_file_path = os.path.join('media', 'ocel_export_file.json')
+            pm4py.write_ocel2_json(ocel_data, ocel_file_path)
+
+            return render(request, 'extractor/ocel_download.html', {'download_url': f'/media/ocel_export_file.json'})
         except Exception as e:
             return render(request, 'extractor/upload_error.html', {'error': str(e)})
 
@@ -78,12 +84,16 @@ def process_columns(request):
             return render(request, 'extractor/upload_error.html', {'error': 'No file or columns selected!'})
 
         try:
-            data = pd.read_csv(file_path)
+            ocel_data = convert_to_ocel_format(file_path, selected_columns)
 
-            processed_data = data[selected_columns]
+            ocel_file_path = os.path.join(settings.MEDIA_ROOT, 'ocel_export.json')
+            save_ocel_to_file(ocel_data, ocel_file_path)
 
-            ocel_json = processed_data.to_json(orient='records')
+            download_url = f"{settings.MEDIA_URL}ocel_export.json"
 
-            return JsonResponse({'ocel': ocel_json})
+            return render(request, 'extractor/processed_columns.html', {
+                'json_data': json.dumps(ocel_data, indent=4),
+                'download_url': download_url
+            })
         except Exception as e:
             return render(request, 'extractor/upload_error.html', {'error': str(e)})
