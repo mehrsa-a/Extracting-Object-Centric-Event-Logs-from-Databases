@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Object Types</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f4f6f9;
+            font-family: 'Arial', sans-serif;
+            padding-top: 50px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background: #007bff;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 15px 15px 0 0;
+        }
+        .list-group-item {
+            font-size: 18px;
+        }
+        .btn-primary {
+            width: 100%;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .instructions {
+            font-size: 16px;
+            color: #6c757d;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                Select Object Types
+            </div>
+            <div class="card-body">
+                <p class="instructions">
+                    Please select the columns you want to use as Object Types and click "Next".
+                </p>
+                <form method="post" action="{% url 'select_object_type' %}">
+                    {% csrf_token %}
+                    <ul class="list-group">
+                        {% for column in columns %}
+                        <li class="list-group-item">
+                            <label>
+                                <input type="checkbox" name="selected_columns" value="{{ column }}">
+                                {{ column }}
+                            </label>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <button type="submit" class="btn btn-primary mt-3">Next</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

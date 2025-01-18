@@ -68,17 +68,16 @@ def get_columns_from_csv(file_path):
     return list(df.columns)
 
 
-def convert_to_ocel_format(file_path, case_id_column, activity_column, timestamp_column, sorting_column=None):
+def convert_to_ocel_format(file_path, activity_column, timestamp_column, object_type_columns):
     df = pd.read_csv(file_path)
 
     df = df.rename(columns={
-        case_id_column: 'ocel:case_id',
         activity_column: 'ocel:activity',
         timestamp_column: 'ocel:timestamp',
     })
 
-    if sorting_column:
-        df = df.sort_values(by=sorting_column)
+    for col in object_type_columns:
+        df = df.rename(columns={col: f'ocel:type:{col}'})
 
     ocel_data = {
         "events": df.to_dict(orient='records')
