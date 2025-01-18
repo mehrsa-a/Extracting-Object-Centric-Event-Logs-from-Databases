@@ -7,6 +7,7 @@ from django.http import JsonResponse
 import pm4py
 from django.conf import settings
 from .utils import convert_to_ocel_format, save_ocel_to_file, get_columns_from_csv, get_columns_from_file
+import os
 
 
 def index(request):
@@ -92,8 +93,8 @@ def select_object_type(request):
 def select_event_attributes(request):
     if request.method == 'POST':
         selected_attributes = request.POST.getlist('selected_attributes')
-        if not selected_attributes:
-            return render(request, 'extractor/upload_error.html', {'error': 'No columns selected!'})
+        # if not selected_attributes:
+        #     return render(request, 'extractor/upload_error.html', {'error': 'No columns selected!'})
 
         request.session['event_attributes'] = selected_attributes
 
@@ -133,7 +134,8 @@ def select_object_attributes(request):
 
     all_columns = get_columns_from_csv(file_path)
     object_types = request.session.get('object_types', [])
-    excluded_columns = {*object_types}
+    event_attributes = request.session.get('event_attributes')
+    excluded_columns = {*object_types, *event_attributes}
     available_columns = [col for col in all_columns if col not in excluded_columns]
 
     return render(request, 'extractor/select_object_attributes.html', {
@@ -146,24 +148,45 @@ def process_columns(request):
     file_path = request.session.get('uploaded_file_path')
     activity_column = request.session.get('activity')
     timestamp_column = request.session.get('timestamp')
-    object_types = request.session.get('object_type')
+    object_types = request.session.get('object_types')
+    selected_event_attributes = request.session.get('event_attributes')
+    selected_object_attributes = request.session.get('object_attributes')
 
     try:
         event_log = pd.read_csv(file_path)
+
+        temp_log = event_log.copy()
+        temp_log[timestamp_column] = pd.to_datetime(event_log[timestamp_column])
 
         event_log = event_log.rename(columns={
             activity_column: 'ocel:activity',
             timestamp_column: 'ocel:timestamp'
         })
 
-        for obj_type in object_types:
-            event_log[f'ocel:type:{obj_type}'] = event_log[obj_type]
+        if selected_event_attributes is None:
+            selected_event_attributes = []
+
+        if selected_object_attributes is None:
+            selected_object_attributes = []
+        # for obj_type in object_types:
+        #     event_log[f'ocel:type:{obj_type}'] = event_log[obj_type]
 
         ocel_data = pm4py.convert_log_to_ocel(
             event_log,
             activity_column='ocel:activity',
-            timestamp_column='ocel:timestamp'
+            timestamp_column='ocel:timestamp',
+            object_types=object_types,
+            additional_event_attributes=selected_event_attributes,
+            additional_object_attributes=selected_object_attributes
         )
+
+        pm4py.write_ocel2_json(ocel_data, 'ocel_file')
+
+        with open('ocel_file.jsonocel', 'r') as file:
+            ocel_data = json.load(file)
+
+        if os.path.exists("ocel_file.jsonocel"):
+            os.remove("ocel_file.jsonocel")
 
         ocel_file_path = os.path.join(settings.MEDIA_ROOT, 'ocel_export.json')
         save_ocel_to_file(ocel_data, ocel_file_path)
