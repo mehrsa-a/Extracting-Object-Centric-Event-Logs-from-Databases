@@ -3,11 +3,9 @@ from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render, redirect
 import json
 import os
-from django.http import JsonResponse
 import pm4py
 from django.conf import settings
-from .utils import convert_to_ocel_format, save_ocel_to_file, get_columns_from_csv, get_columns_from_file
-import os
+from .utils import save_ocel_to_file, get_columns_from_csv
 
 
 def index(request):
