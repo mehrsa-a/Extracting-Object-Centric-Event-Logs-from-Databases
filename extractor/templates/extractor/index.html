@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,7 +123,7 @@
 <body>
     <div class="container">
         <div class="hero-image">
-            <img src="/static/images/back.png" alt="background">
+            <img src="{%  static 'extractor/back.png' %}" alt="background">
             <div class="hero-content">
                 <h1>OCEL GENERATOR</h1>
                 <p>This tool helps you extract OCEL files from CSV databases.</p>
@@ -137,7 +138,7 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="info-container">
-                    <img src="/static/images/upload.png" alt="Icon 1">
+                    <img src="{%  static 'extractor/upload.png' %}" alt="Icon 1">
                     <div class="info-content">
                         <h5>Upload Files</h5>
                         <p>Upload your CSV databases to start the OCEL generation process.</p>
@@ -146,7 +147,7 @@
             </div>
             <div class="col-md-4">
                 <div class="info-container">
-                    <img src="/static/images/col.png" alt="Icon 2">
+                    <img src="{%  static 'extractor/col.png' %}" alt="Icon 2">
                     <div class="info-content">
                         <h5>Specify Columns</h5>
                         <p>Visualize and analyze your data efficiently using our tools.</p>
@@ -155,7 +156,7 @@
             </div>
             <div class="col-md-4">
                 <div class="info-container">
-                    <img src="/static/images/file.png" alt="Icon 3">
+                    <img src="{%  static 'extractor/file.png' %}" alt="Icon 3">
                     <div class="info-content">
                         <h5>Generate OCEL</h5>
                         <p>Convert your processed data into OCEL files effortlessly.</p>

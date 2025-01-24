@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: .
+    container_name: django_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=127.0.0.1
+    command: gunicorn --bind 0.0.0.0:8000 finalProject.wsgi:application
