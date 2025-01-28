@@ -19,9 +19,16 @@ def upload_file(request):
         file_name = fs.save(uploaded_file.name, uploaded_file)
         file_path = fs.path(file_name)
 
-        request.session['uploaded_file_path'] = file_path
+        try:
+            pd.read_csv(file_path)
+            if file_path:
+                request.session['uploaded_file_path'] = file_path
+            else:
+                return render(request, 'extractor/upload_error.html', {'error': 'File path is invalid.'})
 
-        return redirect('select_activity')
+            return redirect('select_activity')
+        except Exception as e:
+            return render(request, 'extractor/upload_error.html', {'error': str(e)})
 
     return render(request, 'extractor/upload.html')
 
